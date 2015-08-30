@@ -1,20 +1,12 @@
 
 /*
-  Esplora Kart
+  Esplora Minecraft-
 
-  This sketch turns the Esplora into a PC game pad.
-
-  It uses the both the analog joystick and the four switches.
-  By moving the joystick in a direction or by pressing a switch,
-  the PC will "see" that a key is pressed. If the PC is running
-  a game that has keyboard input, the Esplora can control it.
-
-  The default configuration is suitable for SuperTuxKart, an
-  open-source racing game. It can be downloaded from
-  http://supertuxkart.sourceforge.net/ .
-
-  Created on 22 november 2012
-  By Enrico Gueli <enrico.gueli@gmail.com>
+ Based on EsploraKart 
+  by Enrico Gueli <enrico.gueli@gmail.com>
+  
+  Editted with other fragments from examples by
+  Shane Lester 30th August 2015
 */
 
 
@@ -25,10 +17,15 @@
   which are ordered lists of variables with a fixed size. Each array
   has an index (counting from 0) to keep track of the position
   you're reading in the array, and each position can contain a number.
+  
+  I have split the arrays- the first one will handle 6 keypresses. The last 2 buttons
+  are separate as they handle mouse button presses
 
-  This code uses three different arrays: one for the buttons you'll read;
+  This code uses four different arrays: one for the buttons you'll read;
   a second to hold the current states of those buttons; and a third to hold
-  the keystrokes associated with each button.
+  the keystrokes associated with each button, the fourth is the slider value,
+  mapped to a value of 0-8 and the array selects the character for keypress-
+  I unsucessfully tried casting to Char.
  */
 
 /*
@@ -79,7 +76,11 @@ const char keystrokes[] = {
   '1',
   '0'
 };
+/*
+This array holds the characters that correspond to the slider 
+values
 
+*/
 const char inventory[] ={
   '1',
   '2',
@@ -93,17 +94,13 @@ const char inventory[] ={
   };
 
 
-  
-int oldYAxis;
-//monitor head up and down if changing by more than 10 then move the view
-
 /*
   This is code is run only at startup, to initialize the
   virtual USB keyboard.
 */
 void setup() {
   Keyboard.begin();
-   Mouse.begin();            // take control of the mouse
+  Mouse.begin();            // take control of the mouse
 }
 
 /*
@@ -112,6 +109,13 @@ void setup() {
   buttons.W
 */
 void loop() {
+  
+  /*
+  Read the slider- it's reversed so map it to 0 to 8
+  This value corresponds to the inventory array char.
+  Only send the keypress when you move the slider.
+  If it's stable the ensure the key is released
+  */
   int value = map(Esplora.readSlider(),1023,0,0,8);
   if (value != sliderValue){
     Keyboard.press(inventory[value]);
@@ -123,7 +127,7 @@ void loop() {
     
   
   
-  int yAxis = Esplora.readAccelerometer(Y_AXIS);    // read the Y axis
+  int yAxis = Esplora.readAccelerometer(Y_AXIS);    // read the Y axis- from accelerometer demo code
   int mouseY = map(-yAxis, -200, 200, -20, 20);  // map the Y value to a range of movement for the mouse Y
   if (abs(mouseY)<10){
     mouseY =0;
@@ -131,22 +135,27 @@ void loop() {
   
   int xAxis = Esplora.readAccelerometer(X_AXIS);    // read the X axis
   int mouseX = map(-xAxis, -200, 200, -20, 20);  // map the X value to a range of movement for the mouse Y
+ /*
+ Create a neutral area otherwise it's impossible to keep your head stil
+ Change the value below if you want less of a neutral area
+ */
+ 
   if (abs(mouseX)<10){
     mouseX =0;
   }
   
-    Mouse.move(mouseX, mouseY, 0);                 // move the mouse
+    Mouse.move(mouseX, mouseY, 0);                 // move the mouse- move Head position
     
    int button = Esplora.readJoystickSwitch();   // read the joystick pushbutton
 
     if (button == 0) {                           // if the Wjoystick button is pressed
-    Keyboard.press(KEY_LEFT_CTRL);                             // send a mouse click
+    Keyboard.press(KEY_LEFT_CTRL);                             // send a left ctrl- sprint
   } else {
-    Keyboard.release(KEY_LEFT_CTRL);                            // if it's not pressed, release the mouse button 
+    Keyboard.release(KEY_LEFT_CTRL);                            // if it's not pressed, stop sprinting 
   }
 
      
-  // Iterate through all the buttons:
+  // Iterate through  the first 6  buttons- joystick and 2 switches:
   for (byte thisButton = 0; thisButton < 6; thisButton++) {
     boolean lastState = buttonStates[thisButton];
     boolean newState = Esplora.readButton(buttons[thisButton]);
@@ -168,7 +177,7 @@ void loop() {
   }
   
 
-// Iterate through last 2 the buttons:
+// Iterate through last 2 the buttons- mouse button presses:
   for (byte thisButton = 6; thisButton < 8; thisButton++) {
     boolean lastState = buttonStates[thisButton];
     boolean newState = Esplora.readButton(buttons[thisButton]);
@@ -177,6 +186,7 @@ void loop() {
         The Keyboard library allows you to "press" and "release" the
         keys as two distinct actions. These actions can be
         linked to the buttons we're handling.
+        If refers to the array
        */
        if (thisButton ==7){
         mouseButton = MOUSE_LEFT;
