@@ -128,13 +128,13 @@ void loop() {
   
   
   int yAxis = Esplora.readAccelerometer(Y_AXIS);    // read the Y axis- from accelerometer demo code
-  int mouseY = map(-yAxis, -200, 200, -20, 20);  // map the Y value to a range of movement for the mouse Y
+  int mouseY = map(-yAxis, -200, 200, -30, 30);  // map the Y value to a range of movement for the mouse Y
   if (abs(mouseY)<10){
     mouseY =0;
   }
   
   int xAxis = Esplora.readAccelerometer(X_AXIS);    // read the X axis
-  int mouseX = map(-xAxis, -200, 200, -20, 20);  // map the X value to a range of movement for the mouse Y
+  int mouseX = map(-xAxis, -200, 200, -30, 30);  // map the X value to a range of movement for the mouse Y
  /*
  Create a neutral area otherwise it's impossible to keep your head stil
  Change the value below if you want less of a neutral area
